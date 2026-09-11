@@ -331,13 +331,16 @@ REAL_WORDS = set()
 COMMON_WORDS = set()
 
 PREMIUM_WORDS = set()
+COMMON_WORDS_DICT = set()
 
 def _load_premium_words():
-    global PREMIUM_WORDS
+    global PREMIUM_WORDS, COMMON_WORDS_DICT
     try:
         with open(os.path.join(os.path.dirname(__file__), "premium_words.json")) as f:
-            PREMIUM_WORDS = set(json.load(f))
-        print(f"[+] Загружено премиум слов: {len(PREMIUM_WORDS)}")
+            data = json.load(f)
+        PREMIUM_WORDS = set(data.get("premium", []))
+        COMMON_WORDS_DICT = set(data.get("common", []))
+        print(f"[+] Загружено премиум: {len(PREMIUM_WORDS)}, обычных: {len(COMMON_WORDS_DICT)}")
     except Exception as e:
         print(f"[!] Ошибка загрузки premium_words.json: {e}")
 
@@ -415,28 +418,30 @@ def _calc_username_value(word: str, cat: str, scrape: bool = False) -> int:
         if status == "ok" and stars > 0:
             return stars
 
-    base = 50
-
     if wl in PREMIUM_WORDS:
         if len(wl) == 4:
             base = 50000
         else:
             base = 10000
-    elif wl in COMMON_WORDS:
-        if len(wl) == 4:
-            base = 20000
-        else:
-            base = 5000
-    elif wl in REAL_WORDS:
+    elif wl in COMMON_WORDS_DICT:
         if len(wl) == 4:
             base = 5000
         else:
             base = 1500
-    elif _is_good_username(wl):
+    elif wl in COMMON_WORDS:
         if len(wl) == 4:
-            base = 1000
+            base = 2000
         else:
-            base = 300
+            base = 800
+    elif wl in REAL_WORDS:
+        if len(wl) == 4:
+            base = 500
+        else:
+            base = 200
+    elif _is_good_username(wl):
+        base = 50
+    else:
+        base = 10
 
     return max(1, int(base))
 
