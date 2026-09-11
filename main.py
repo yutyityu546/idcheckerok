@@ -612,8 +612,19 @@ def start_command(message):
     )
 
 
+PROCESSED_CALLBACKS = {}
+CALLBACK_TTL = 10
+
 @bot.callback_query_handler(func=lambda call: not call.data.startswith("admin_"))
 def handle_callback(call):
+    now = time.time()
+    if call.id in PROCESSED_CALLBACKS:
+        return
+    PROCESSED_CALLBACKS[call.id] = now
+    for k in list(PROCESSED_CALLBACKS):
+        if now - PROCESSED_CALLBACKS[k] > CALLBACK_TTL:
+            del PROCESSED_CALLBACKS[k]
+
     try:
         bot.answer_callback_query(call.id)
     except Exception:
