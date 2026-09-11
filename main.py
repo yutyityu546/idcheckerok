@@ -816,8 +816,8 @@ def check_single_handle(message):
         safe_send_message(message.chat.id, "Минимальная длина — 4 символа.")
         return
 
-    if not username.isascii() or not username.isalnum():
-        safe_send_message(message.chat.id, "Только латинские буквы и цифры, без пробелов и символов.")
+    if not all(c.isascii() and (c.isalnum() or c == "_") for c in username):
+        safe_send_message(message.chat.id, "Только латинские буквы, цифры и _")
         return
 
     if username in BLOCKED_KEYWORDS:
