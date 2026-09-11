@@ -330,96 +330,16 @@ def fetch_words_by_category(category: str, limit: int = 30) -> list[str]:
 REAL_WORDS = set()
 COMMON_WORDS = set()
 
-PREMIUM_NAMES = {
-    "hayden", "mason", "liam", "noah", "ethan", "logan", "luca", "milo",
-    "ruby", "iris", "aria", "nova", "luna", "maya", "sofia", "zoe",
-    "jack", "jade", "joel", "kirk", "lane", "neil", "paul", "reed",
-    "sean", "troy", "ward", "zane", "clint", "dean", "blake", "chase",
-    "drew", "cole", "dylan", "ethan", "finn", "gavin", "henry",
-    "isaac", "jason", "kevin", "liam", "mason", "noah", "owen",
-    "quinn", "ryder", "sean", "tyler", "vincent", "wyatt",
-}
+PREMIUM_WORDS = set()
 
-PREMIUM_GEOGRAPHY = {
-    "norway", "sweden", "france", "italy", "spain", "germany", "japan",
-    "china", "india", "brazil", "russia", "egypt", "israel", "qatar",
-    "cyprus", "malta", "korea", "peru", "cuba", "fiji", "iraq",
-    "bali", "crete", "osaka", "berlin", "paris", "london", "miami",
-    "tokyo", "delhi", "cairo", "kyiv", "rome", "asia", "dubai",
-    "hawaii", "canada", "mexico", "poland", "turkey", "greece",
-    "swiss", "venice", "naples", "florence", "vienna", "prague",
-    "moscow", "beijing", "seoul", "bangkok", "hanoi", "lima",
-}
-
-PREMIUM_WORDS_4_6 = {
-    "mold", "boar", "clog", "dusk", "flux", "fume", "glen", "haze",
-    "iron", "jinx", "knot", "lens", "moss", "nape", "opal", "pine",
-    "quay", "rift", "sage", "tarn", "urge", "vale", "wade", "yarn",
-    "zinc", "bolt", "dawn", "echo", "fawn", "glow", "hint", "iris",
-    "jade", "kite", "loft", "muse", "nook", "onyx", "plum", "rain",
-    "silk", "tide", "vine", "arch", "bard", "core", "drum", "epic",
-    "grit", "harp", "icon", "jazz", "lore", "pike", "rune", "saga",
-    "tome", "vane", "cider", "crane", "daisy", "eagle", "fable",
-    "grain", "ivory", "karma", "lemon", "noble", "pearl", "cedar",
-    "cobra", "delta", "ember", "fjord", "haven", "lotus", "raven",
-    "viper", "blaze", "cloud", "drift", "grove", "knoll", "lunar",
-    "orbit", "prism", "quest", "rider", "solar", "trail", "storm",
-    "blade", "swift", "nexus", "tiger", "frost", "dream", "force",
-    "royal", "steel", "ultra", "whale", "forge", "ridge", "shade",
-    "ocean", "river", "flame", "frost", "ghost", "power", "noble",
-    "beach", "brook", "creek", "field", "flint", "heath", "marsh",
-    "rocks", "sandy", "trend", "vivid", "winds", "woods", "youth",
-    "cedar", "maple", "aspen", "birch", "hazel", "laurel", "willow",
-    "crystal", "diamond", "emerald", "jade", "onyx", "ruby", "sapphire",
-    "topaz", "amber", "pearl", "ivory", "bronze", "chrome", "copper",
-    "gold", "iron", "nickel", "platinum", "silver", "steel", "titan",
-}
-
-PREMIUM_BRANDS_TECH = {
-    "apple", "google", "tesla", "nike", "sony", "meta", "visa", "zoom",
-    "uber", "nasa", "aws", "api", "git", "linux", "pixel", "robot",
-    "cyber", "drone", "crypto", "token", "wallet", "defi", "nft",
-    "binance", "solana", "chain", "forge", "nexus", "pulse", "vortex",
-    "quantum", "matrix", "cipher", "helix", "nova", "spark", "flash",
-}
-
-PREMIUM_MYTHOLOGY = {
-    "odin", "zeus", "ares", "isis", "loki", "thor", "maya", "troy",
-    "titan", "ninja", "ronin", "samurai", "spartan", "warrior",
-    "phoenix", "dragon", "griffin", "hydra", "kraken", "minotaur",
-    "pegasus", "sphinx", "cerberus", "centaur", "chimera", "golem",
-}
-
-PREMIUM_POP_CULTURE = {
-    "mario", "sonic", "naruto", "goku", "link", "zelda", "batman",
-    "joker", "saitama", "luffy", "gandalf", "aragorn", "frodo",
-    "neo", "morpheus", "vader", "yoda", "solo", "fury", "thor",
-    "hulk", "iron", "storm", "flash", "wolverine", "deadpool",
-    "spider", "thanos", "loki", "ultron", "vision", "widow",
-}
-
-PREMIUM_CRYPTO = {
-    "bitcoin", "ethereum", "solana", "dogecoin", "pepe", "bonk",
-    "satoshi", "vitalik", "binance", "coinbase", "tether", "ripple",
-    "cardano", "polkadot", "avalanche", "polygon", "uniswap",
-    "chainlink", "cosmos", "near", "aptos", "sui", "ton",
-}
-
-ALL_PREMIUM = (
-    PREMIUM_NAMES | PREMIUM_GEOGRAPHY | PREMIUM_WORDS_4_6 |
-    PREMIUM_BRANDS_TECH | PREMIUM_MYTHOLOGY |
-    PREMIUM_POP_CULTURE | PREMIUM_CRYPTO
-)
-
-PREMIUM_TIERS = {
-    "names": (PREMIUM_NAMES, 8000),
-    "geography": (PREMIUM_GEOGRAPHY, 7000),
-    "words": (PREMIUM_WORDS_4_6, 5000),
-    "brands": (PREMIUM_BRANDS_TECH, 6000),
-    "mythology": (PREMIUM_MYTHOLOGY, 5500),
-    "popculture": (PREMIUM_POP_CULTURE, 5000),
-    "crypto": (PREMIUM_CRYPTO, 4500),
-}
+def _load_premium_words():
+    global PREMIUM_WORDS
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "premium_words.json")) as f:
+            PREMIUM_WORDS = set(json.load(f))
+        print(f"[+] Загружено премиум слов: {len(PREMIUM_WORDS)}")
+    except Exception as e:
+        print(f"[!] Ошибка загрузки premium_words.json: {e}")
 
 
 def _load_real_words():
@@ -430,6 +350,7 @@ def _load_real_words():
         COMMON_WORDS.add(w.lower())
 
 _load_real_words()
+_load_premium_words()
 
 
 def _is_good_username(word: str) -> bool:
@@ -487,10 +408,6 @@ def _scrape_fragment_price(username: str) -> tuple[int, str]:
 
 
 def _calc_username_value(word: str, cat: str, scrape: bool = False) -> int:
-    """Username value estimation.
-    If scrape=True — queries Fragment for real price (slow).
-    For bulk operations — uses fast local estimate.
-    """
     wl = word.lower().strip()
 
     if scrape:
@@ -498,19 +415,16 @@ def _calc_username_value(word: str, cat: str, scrape: bool = False) -> int:
         if status == "ok" and stars > 0:
             return stars
 
-    base = 200
-    for tier_name, (tier_set, tier_val) in PREMIUM_TIERS.items():
-        if wl in tier_set:
-            base = tier_val
-            break
-
-    if base == 200:
-        if wl in COMMON_WORDS:
-            base = 3000 if len(wl) <= 4 else 1500 if len(wl) <= 6 else 500
-        elif wl in REAL_WORDS and _is_good_username(wl):
-            base = 800
-        elif _is_good_username(wl):
-            base = 400
+    if wl in PREMIUM_WORDS:
+        base = 3000
+    elif wl in COMMON_WORDS:
+        base = 1500
+    elif wl in REAL_WORDS:
+        base = 600
+    elif _is_good_username(wl):
+        base = 300
+    else:
+        base = 100
 
     length_mult = {4: 2.0, 5: 1.5, 6: 1.2, 7: 1.0, 8: 0.8, 9: 0.6}
     base *= length_mult.get(len(wl), 0.4)
