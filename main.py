@@ -439,7 +439,6 @@ _load_real_words()
 
 
 def _is_good_username(word: str) -> bool:
-    """Pronounceability check — real words and names have vowel flow."""
     wl = word.lower()
     vowels = sum(1 for c in wl if c in "aeiou")
     consonants = len(wl) - vowels
@@ -453,54 +452,82 @@ def _is_good_username(word: str) -> bool:
 
 
 def _calc_username_value(word: str, cat: str) -> int:
-    """Market-aware valuation calibrated to real Fragment/Getgems data.
+    """Estimates real USD market price based on Fragment/Getgems sales.
+    Returns price in Telegram Stars (1 star ≈ $0.005).
 
-    Fragment reference prices (TON):
-    - @mold (4) = 5,311 TON ($8,333)
-    - @boar (4) = 5,309 TON ($8,330)
-    - @hayden (6, name) = 9,676 TON ($15,182)
-    - @cower (5) = 520 TON ($694)
-    - @needmoney (9) = 239 TON ($318)
-    - @accountname (11) = 453 TON ($614)
+    Fragment reference:
+    - 3-letter common word: $500-$50,000
+    - 4-letter common word: $500-$15,000
+    - 5-letter real word: $100-$1,000
+    - 6-letter name: $500-$15,000
+    - 7+ letter real word: $20-$500
+    - Pronounceable nonsense: $1-$20
     """
     wl = word.lower()
     length = len(wl)
 
-    base = 20
+    usd = 5.0
 
-    matched_tier = None
     for tier_name, (tier_set, tier_base) in PREMIUM_TIERS.items():
         if wl in tier_set:
-            base = tier_base
-            matched_tier = tier_name
+            if length == 3:
+                usd = 2500.0
+            elif length == 4:
+                usd = 1500.0
+            elif length == 5:
+                usd = 500.0
+            elif length == 6:
+                usd = 300.0
+            else:
+                usd = 150.0
             break
 
-    if matched_tier is None:
+    if usd == 5.0:
         if wl in COMMON_WORDS:
             if length <= 4:
-                base = 380
+                usd = 800.0
             elif length <= 6:
-                base = 250
+                usd = 200.0
             elif length <= 8:
-                base = 150
+                usd = 50.0
             else:
-                base = 80
+                usd = 15.0
         elif wl in REAL_WORDS and _is_good_username(wl):
-            base = 35
+            usd = 30.0
         elif _is_good_username(wl):
-            base = 20
+            usd = 8.0
 
-    length_mult = {3: 1.8, 4: 1.5, 5: 1.2, 6: 1.0, 7: 0.8, 8: 0.6}
-    base *= length_mult.get(length, 0.4)
+    if length == 3:
+        usd *= 3.0
+    elif length == 4:
+        usd *= 2.0
+    elif length == 5:
+        usd *= 1.3
+    elif length == 6:
+        usd *= 1.0
+    elif length == 7:
+        usd *= 0.7
+    elif length >= 8:
+        usd *= 0.4
 
     if _is_good_username(wl):
-        base *= 1.1
+        usd *= 1.2
 
     cat_mult = {"rare": 1.15, "archaic": 1.1, "narrow": 1.05}
-    base *= cat_mult.get(cat, 1.0)
+    usd *= cat_mult.get(cat, 1.0)
 
-    base = max(10, min(500, int(base)))
-    return base
+    usd = max(1.0, min(50000.0, usd))
+    stars = int(usd / 0.005)
+    return stars
+
+
+def _format_stars(stars: int) -> str:
+    if stars >= 10000:
+        return f"{stars:,} ⭐ (~${int(stars * 0.005):,})"
+    elif stars >= 1000:
+        return f"{stars:,} ⭐ (~${int(stars * 0.005):,})"
+    else:
+        return f"{stars} ⭐ (~${int(stars * 0.005)})"
 
 
 def fetch_words_mixed(limit: int = 30) -> list[tuple[str, str, str, int]]:
@@ -837,7 +864,7 @@ def _process_callback(call, user_id):
             if category == "mixed":
                 items = fetch_words_mixed(limit=30)
                 report = "🌐 VIP: Все категории\n\n"
-                report += "\n".join(f"• @{w} {emoji} 💰{val}" for w, _, emoji, val in items)
+                report += "\n".join(f"• @{w} {emoji} {_format_stars(val)}" for w, _, emoji, val in items)
                 raw_bytes = "\n".join(w for w, _, _, _ in items).encode("utf-8")
             else:
                 cat_meta = WORD_CATEGORY_META.get(category, {})
