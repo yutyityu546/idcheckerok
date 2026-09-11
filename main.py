@@ -329,20 +329,16 @@ def fetch_words_by_category(category: str, limit: int = 30) -> list[str]:
 
 REAL_WORDS = set()
 COMMON_WORDS = set()
+USERNAME_DICT = set()
 
-PREMIUM_WORDS = set()
-COMMON_WORDS_DICT = set()
-
-def _load_premium_words():
-    global PREMIUM_WORDS, COMMON_WORDS_DICT
+def _load_username_dict():
+    global USERNAME_DICT
     try:
-        with open(os.path.join(os.path.dirname(__file__), "premium_words.json")) as f:
-            data = json.load(f)
-        PREMIUM_WORDS = set(data.get("premium", []))
-        COMMON_WORDS_DICT = set(data.get("common", []))
-        print(f"[+] Загружено премиум: {len(PREMIUM_WORDS)}, обычных: {len(COMMON_WORDS_DICT)}")
+        with open(os.path.join(os.path.dirname(__file__), "username_dictionary.json")) as f:
+            USERNAME_DICT = set(json.load(f))
+        print(f"[+] Загружен словарь ников: {len(USERNAME_DICT)}")
     except Exception as e:
-        print(f"[!] Ошибка загрузки premium_words.json: {e}")
+        print(f"[!] Ошибка загрузки username_dictionary.json: {e}")
 
 
 def _load_real_words():
@@ -353,7 +349,7 @@ def _load_real_words():
         COMMON_WORDS.add(w.lower())
 
 _load_real_words()
-_load_premium_words()
+_load_username_dict()
 
 
 def _is_good_username(word: str) -> bool:
@@ -418,26 +414,12 @@ def _calc_username_value(word: str, cat: str, scrape: bool = False) -> int:
         if status == "ok" and stars > 0:
             return stars
 
-    if wl in PREMIUM_WORDS:
-        if len(wl) == 4:
-            base = 50000
-        else:
-            base = 10000
-    elif wl in COMMON_WORDS_DICT:
-        if len(wl) == 4:
-            base = 5000
-        else:
-            base = 1500
+    if wl in USERNAME_DICT:
+        base = 5000 if len(wl) <= 4 else 2000 if len(wl) == 5 else 800
     elif wl in COMMON_WORDS:
-        if len(wl) == 4:
-            base = 2000
-        else:
-            base = 800
+        base = 2000 if len(wl) <= 4 else 800 if len(wl) == 5 else 300
     elif wl in REAL_WORDS:
-        if len(wl) == 4:
-            base = 500
-        else:
-            base = 200
+        base = 500 if len(wl) <= 4 else 200
     elif _is_good_username(wl):
         base = 50
     else:
@@ -504,24 +486,14 @@ def _bulk_check_available(words: list[str]) -> set[str]:
 
 def _fetch_vip_words(limit: int = 50) -> list[tuple[str, str, str, int]]:
     all_words = []
-    for w in PREMIUM_WORDS:
+    for w in USERNAME_DICT:
         if w.lower() not in BLOCKED_KEYWORDS:
-            val = _calc_username_value(w, "premium")
-            all_words.append((w, "premium", "💎", val))
-    for w in COMMON_WORDS_DICT:
-        if w.lower() not in BLOCKED_KEYWORDS:
-            val = _calc_username_value(w, "common")
-            all_words.append((w, "common", "📖", val))
-    for w in REAL_WORDS:
-        if w.lower() not in BLOCKED_KEYWORDS and w not in PREMIUM_WORDS and w not in COMMON_WORDS_DICT:
-            val = _calc_username_value(w, "real")
-            all_words.append((w, "real", "⭐", val))
+            val = _calc_username_value(w, "dict")
+            all_words.append((w, "dict", "📖", val))
     all_words.sort(key=lambda x: -x[3])
-    candidates = all_words[:limit * 3]
+    candidates = all_words[:limit * 5]
     free_words = _bulk_check_available([w for w, _, _, _ in candidates])
     picked = [(w, cat, em, v) for w, cat, em, v in candidates if w.lower() in free_words][:limit]
-    if len(picked) < limit:
-        picked = candidates[:limit]
     return picked
 
 
