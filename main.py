@@ -327,61 +327,90 @@ def fetch_words_by_category(category: str, limit: int = 30) -> list[str]:
     return picked
 
 
-REAL_WORDS = set()
+PREMIUM_NAMES = {
+    "hayden", "mason", "liam", "noah", "ethan", "logan", "luca", "milo",
+    "ruby", "iris", "aria", "nova", "luna", "maya", "sofia", "zoe",
+    "leo", "max", "ian", "kai", "rex", "ace", "ray", "sky", "taj",
+    "jack", "jade", "joel", "joss", "kirk", "lane", "neil", "omal",
+    "paul", "reed", "sean", "troy", "ward", "zane", "clint", "dean",
+}
 
 PREMIUM_GEOGRAPHY = {
-    "norway", "sweden", "france", "italy", "spain", "germany", "japan", "china",
-    "india", "brazil", "russia", "egypt", "israel", "qatar", "cyprus", "malta",
-    "venus", "mars", "korea", "niger", "ghana", "peru", "cuba", "fiji", "iraq",
-    "iran", "oman", "mali", "togo", "benin", "java", "fuji", "bali", "crete",
-    "texas", "osaka", "berlin", "paris", "london", "miami", "tokyo", "delhi",
-    "cairo", "rome", "kyiv", "baku", "doha", "rips", "asia", "europa", "afro",
+    "norway", "sweden", "france", "italy", "spain", "germany", "japan",
+    "china", "india", "brazil", "russia", "egypt", "israel", "qatar",
+    "cyprus", "malta", "korea", "peru", "cuba", "fiji", "iraq", "iran",
+    "oman", "mali", "togo", "bali", "crete", "osaka", "berlin", "paris",
+    "london", "miami", "tokyo", "delhi", "cairo", "kyiv", "baku", "doha",
+    "asia", "europa", "niger", "ghana", "java", "fuji", "texas", "rome",
+}
+
+PREMIUM_WORDS_3_4 = {
+    "mold", "boar", "clog", "dusk", "flux", "fume", "glen", "haze",
+    "iron", "jinx", "knot", "lens", "moss", "nape", "opal", "pine",
+    "quay", "rift", "sage", "tarn", "urge", "vale", "wade", "yarn",
+    "zinc", "ash", "axe", "bay", "cob", "dew", "elm", "fen", "gem",
+    "hut", "ivy", "jab", "keg", "lid", "mud", "nap", "orb", "peg",
+    "rug", "sip", "tab", "urn", "vat", "wig", "zap", "bolt", "dawn",
+    "echo", "fawn", "glow", "hint", "iris", "jade", "kite", "loft",
+    "muse", "nook", "onyx", "plum", "rain", "silk", "tide", "vine",
+    "wren", "yore", "arch", "bard", "core", "drum", "epic", "fyrd",
+    "grit", "harp", "icon", "jazz", "kern", "lore", "mace", "naev",
+    "opal", "pike", "rune", "saga", "tome", "vane", "wold", "zinc",
+}
+
+PREMIUM_WORDS_5_6 = {
+    "boar", "cider", "crane", "daisy", "eagle", "fable", "grain",
+    "honor", "ivory", "jewel", "karma", "lemon", "maple", "noble",
+    "olive", "pearl", "quail", "robin", "sigma", "thorn", "umbra",
+    "vigor", "whale", "cedar", "cobra", "delta", "ember", "fjord",
+    "glacier", "haven", "inferno", "lotus", "mango", "nectar",
+    "oracle", "plume", "raven", "ember", "frost", "shard", "tower",
+    "ultra", "viper", "zenith", "blaze", "cloud", "drift", "felix",
+    "grove", "haven", "ivory", "jolly", "knoll", "lunar", "marsh",
+    "noble", "orbit", "prism", "quest", "rider", "solar", "trail",
 }
 
 PREMIUM_BRANDS_TECH = {
     "apple", "google", "tesla", "nike", "sony", "meta", "visa", "zoom",
-    "uber", "lyft", "visa", "axon", "nasa", "fbi", "cia", "nato", "aws",
-    "sql", "api", "git", "ssh", "css", "html", "linux", "macos", "pixel",
-    "robot", "cyber", "drone", "hacker", "crypto", "token", "wallet",
-    "defi", "nft", "web3", "blockchain", "mining", "mining",
+    "uber", "nasa", "fbi", "cia", "nato", "aws", "sql", "api", "git",
+    "ssh", "css", "html", "linux", "pixel", "robot", "cyber", "drone",
+    "crypto", "token", "wallet", "defi", "nft", "web3", "mining",
+    "tesla", "ford", "bmw", "audi", "huawei", "xiaomi", "samsung",
 }
 
 PREMIUM_MYTHOLOGY = {
-    "odin", "zeus", "ares", "isis", "loki", "thor", "rama", "shiva",
-    "maya", "kali", "yama", "raju", "troy", "sparta", "olymp", "titan",
-    "ninja", "samurai", "ronin", "shogun", "sensei", "yakuza",
+    "odin", "zeus", "ares", "isis", "loki", "thor", "rama", "maya",
+    "kali", "troy", "sparta", "olymp", "titan", "ninja", "ronin",
 }
 
-PREMIUM_GEMSTONE = {
-    "ruby", "jade", "onyx", "gold", "opal", "silk", "pearl", "amber",
-    "emerald", "diamond", "crystal", "ivory", "marble", "bronze", "silver",
-    "platinum", "copper", "cobalt", "titanium", "chrome",
+PREMIUM_POP_CULTURE = {
+    "mario", "luigi", "sonic", "pikachu", "naruto", "goku", "link",
+    "zelda", "mario", "batman", "ironman", "spider", "deadpool",
+    "thanos", "joker", "harley", "saitama", "itachi", "luffy",
 }
 
-PREMIUM_ANIMALS = {
-    "tiger", "eagle", "raven", "cobra", "viper", "shark", "wolf", "bear",
-    "lynx", "hawk", "puma", "fox", "owl", "elk", "ape", "ram",
-    "lion", "bull", "hawk", "crane", "drake", "wyrm",
-}
-
-PREMIUM_POWER = {
-    "royal", "prime", "sigma", "alpha", "omega", "gamma", "delta",
-    "legend", "hero", "viper", "nexus", "atlas", "storm", "blade",
-    "frost", "flash", "spark", "ghost", "shadow", "phantom", "dark",
-    "light", "flame", "fury", " rage", "wrath", "soul", "doom",
-}
-
-PREMIUM_SHORT = {
-    "neo", "ace", "max", "rex", "zen", "ion", "alt", "app", "bio",
-    "bot", "cmd", "dev", "ego", "fox", "gem", "hub", "ice", "jag",
-    "key", "lab", "mod", "net", "owl", "pro", "rat", "sky", "sun",
-    "tv", "web", "zap", "bit", "box", "zap", "zip", "usa", "uk",
+PREMIUM_CRYPTO = {
+    "bitcoin", "ethereum", "solana", "dogecoin", "shiba", "pepe",
+    "bonk", "wojak", "satoski", "vitalik", "binance", "coinbase",
+    "tether", "ripple", "cardano", "polkadot", "avalanche",
 }
 
 ALL_PREMIUM = (
-    PREMIUM_GEOGRAPHY | PREMIUM_BRANDS_TECH | PREMIUM_MYTHOLOGY |
-    PREMIUM_GEMSTONE | PREMIUM_ANIMALS | PREMIUM_POWER | PREMIUM_SHORT
+    PREMIUM_NAMES | PREMIUM_GEOGRAPHY | PREMIUM_WORDS_3_4 |
+    PREMIUM_WORDS_5_6 | PREMIUM_BRANDS_TECH | PREMIUM_MYTHOLOGY |
+    PREMIUM_POP_CULTURE | PREMIUM_CRYPTO
 )
+
+PREMIUM_TIERS = {
+    "names": (PREMIUM_NAMES, 480),
+    "geography": (PREMIUM_GEOGRAPHY, 470),
+    "words34": (PREMIUM_WORDS_3_4, 460),
+    "words56": (PREMIUM_WORDS_5_6, 350),
+    "brands": (PREMIUM_BRANDS_TECH, 440),
+    "mythology": (PREMIUM_MYTHOLOGY, 430),
+    "popculture": (PREMIUM_POP_CULTURE, 420),
+    "crypto": (PREMIUM_CRYPTO, 400),
+}
 
 
 def _load_real_words():
@@ -393,7 +422,7 @@ _load_real_words()
 
 
 def _is_good_username(word: str) -> bool:
-    """Checks if word looks like a pronounceable username."""
+    """Pronounceability check — real words and names have vowel flow."""
     wl = word.lower()
     vowels = sum(1 for c in wl if c in "aeiou")
     consonants = len(wl) - vowels
@@ -407,46 +436,43 @@ def _is_good_username(word: str) -> bool:
 
 
 def _calc_username_value(word: str, cat: str) -> int:
-    """Market-aware username valuation based on real TON marketplace data.
+    """Market-aware valuation calibrated to real Fragment/Getgems data.
 
-    Price tiers based on Fragment/Getgems floor prices:
-    - 3-letter premium: 500-50000 TON ($1000-$100000+)
-    - Real word 3-4 letter: 200-5000 TON
-    - Country/brand 3-5 letter: 100-3000 TON
-    - Real English word: 20-500 TON
-    - Good pronounceable: 5-100 TON
-    - Random garbage: 1-10 TON
+    Fragment reference prices (TON):
+    - @mold (4) = 5,311 TON ($8,333)
+    - @boar (4) = 5,309 TON ($8,330)
+    - @hayden (6, name) = 9,676 TON ($15,182)
+    - @cower (5) = 520 TON ($694)
+    - @needmoney (9) = 239 TON ($318)
+    - @accountname (11) = 453 TON ($614)
     """
     wl = word.lower()
     length = len(wl)
 
-    if wl in PREMIUM_GEOGRAPHY:
-        base = 480
-    elif wl in PREMIUM_BRANDS_TECH:
-        base = 460
-    elif wl in PREMIUM_MYTHOLOGY:
-        base = 450
-    elif wl in PREMIUM_GEMSTONE:
-        base = 440
-    elif wl in PREMIUM_ANIMALS:
-        base = 430
-    elif wl in PREMIUM_POWER:
-        base = 420
-    elif wl in PREMIUM_SHORT:
-        base = 400
-    elif wl in REAL_WORDS and length <= 4:
-        base = 350
-    elif wl in REAL_WORDS and length == 5:
-        base = 280
-    elif wl in REAL_WORDS and length == 6:
-        base = 200
-    elif wl in REAL_WORDS:
-        base = 150
-    else:
-        base = 50
+    base = 20
 
-    length_mult = {3: 2.0, 4: 1.5, 5: 1.2, 6: 1.0, 7: 0.8}
-    base *= length_mult.get(length, 0.6)
+    matched_tier = None
+    for tier_name, (tier_set, tier_base) in PREMIUM_TIERS.items():
+        if wl in tier_set:
+            base = tier_base
+            matched_tier = tier_name
+            break
+
+    if matched_tier is None:
+        if wl in REAL_WORDS:
+            if length <= 4:
+                base = 380
+            elif length <= 6:
+                base = 250
+            elif length <= 8:
+                base = 150
+            else:
+                base = 80
+        elif _is_good_username(wl):
+            base = 60
+
+    length_mult = {3: 2.5, 4: 2.0, 5: 1.5, 6: 1.2, 7: 1.0, 8: 0.8}
+    base *= length_mult.get(length, 0.5)
 
     if _is_good_username(wl):
         base *= 1.3
