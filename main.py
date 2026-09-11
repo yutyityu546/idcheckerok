@@ -303,7 +303,6 @@ def _build_word_libraries() -> dict:
 
 
 WORD_LIBRARIES = _build_word_libraries()
-_load_real_words()
 
 WORD_CATEGORY_META = {
     "rare": {"title": "💎 Дорогие/редкие", "description": "Редкие буквы, звучание ценности"},
@@ -344,6 +343,8 @@ def _load_real_words():
     global REAL_WORDS
     for w in WORD_LIBRARIES.get("all", []):
         REAL_WORDS.add(w.lower())
+
+_load_real_words()
 
 
 def _calc_username_value(word: str, cat: str) -> int:
