@@ -647,7 +647,6 @@ def _web_check(username: str) -> tuple[bool | None, str]:
 
 
 def _fast_check(username: str) -> tuple[bool, str]:
-    """Быстрая проверка одного юзера с коротким таймаутом."""
     username = username.lower().strip().lstrip("@")
     if len(username) < 4:
         return False, "Короткий"
@@ -674,6 +673,20 @@ def _fast_check(username: str) -> tuple[bool, str]:
         return False, web_reason
     if web_ok is False:
         return True, "Свободен"
+
+    try:
+        chat = bot.get_chat(f"@{username}")
+        if chat:
+            return False, "Занят"
+    except Exception as e:
+        err_msg = str(e).lower()
+        is_not_found = any(k in err_msg for k in [
+            "not found", "chat not found", "404",
+            "username_not_occupied", "user_not_found",
+            "bad request", "invalid user",
+        ])
+        if is_not_found:
+            return True, "Свободен"
 
     return False, "Не удалось проверить"
 
@@ -820,10 +833,14 @@ def _process_callback(call, user_id):
             category = call.data.replace("vip_cat_", "")
             
             if category == "mixed":
+                safe_send_message(call.message.chat.id, "🔍 Проверяю доступность ников из словаря...")
                 items = _fetch_vip_words(limit=50)
-                report = "🌐 VIP: Все категории\n\n"
-                report += "\n".join(f"• @{w} {emoji} {_format_stars(val)}" for w, _, emoji, val in items)
-                raw_bytes = "\n".join(w for w, _, _, _ in items).encode("utf-8")
+                if not items:
+                    report = "🌐 VIP: Все категории\n\n⚠️ Не удалось проверить ники. Попробуйте позже."
+                else:
+                    report = "🌐 VIP: Все категории (проверено ✅)\n\n"
+                    report += "\n".join(f"• @{w} {_format_stars(val)}" for w, _, _, val in items)
+                raw_bytes = "\n".join(w for w, _, _, _ in items).encode("utf-8") if items else b""
             else:
                 cat_meta = WORD_CATEGORY_META.get(category, {})
                 title = cat_meta.get("title", "📖")
