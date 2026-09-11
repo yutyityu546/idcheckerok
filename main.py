@@ -327,6 +327,9 @@ def fetch_words_by_category(category: str, limit: int = 30) -> list[str]:
     return picked
 
 
+REAL_WORDS = set()
+COMMON_WORDS = set()
+
 PREMIUM_NAMES = {
     "hayden", "mason", "liam", "noah", "ethan", "logan", "luca", "milo",
     "ruby", "iris", "aria", "nova", "luna", "maya", "sofia", "zoe",
@@ -356,18 +359,30 @@ PREMIUM_WORDS_3_4 = {
     "wren", "yore", "arch", "bard", "core", "drum", "epic", "fyrd",
     "grit", "harp", "icon", "jazz", "kern", "lore", "mace", "naev",
     "opal", "pike", "rune", "saga", "tome", "vane", "wold", "zinc",
+    "acre", "bait", "calm", "damp", "ease", "fame", "gain", "halt",
+    "inn", "jail", "lame", "meek", "neat", "oak", "palm", "raid",
+    "sage", "tame", "urge", "vast", "waif", "yelp", "zone", "cask",
+    "dint", "fret", "grit", "haze", "jab", "keen", "lurk", "mire",
+    "nook", "ogle", "pout", "rife", "sere", "trod", "urn", "wist",
+    "cove", "dale", "eyot", "firth", "gale", "holm", "isle", "kelp",
+    "lode", "mead", "neap", "ox", "pier", "reef", "salt", "tid",
 }
 
 PREMIUM_WORDS_5_6 = {
-    "boar", "cider", "crane", "daisy", "eagle", "fable", "grain",
+    "cider", "crane", "daisy", "eagle", "fable", "grain",
     "honor", "ivory", "jewel", "karma", "lemon", "maple", "noble",
     "olive", "pearl", "quail", "robin", "sigma", "thorn", "umbra",
     "vigor", "whale", "cedar", "cobra", "delta", "ember", "fjord",
-    "glacier", "haven", "inferno", "lotus", "mango", "nectar",
-    "oracle", "plume", "raven", "ember", "frost", "shard", "tower",
-    "ultra", "viper", "zenith", "blaze", "cloud", "drift", "felix",
-    "grove", "haven", "ivory", "jolly", "knoll", "lunar", "marsh",
-    "noble", "orbit", "prism", "quest", "rider", "solar", "trail",
+    "haven", "lotus", "mango", "nectar", "plume", "raven", "shard",
+    "tower", "viper", "zenith", "blaze", "cloud", "drift", "felix",
+    "grove", "knoll", "lunar", "marsh", "orbit", "prism", "quest",
+    "rider", "solar", "trail", "storm", "blade", "swift", "nexus",
+    "cower", "tiger", "lucky", "flame", "frost", "ghost", "power",
+    "dream", "force", "noble", "royal", "steel", "witch", "ultra",
+    "basin", "beach", "brook", "creek", "field", "flint", "forge",
+    "gaunt", "heath", "hills", "lofty", "marsh", "mills", "moors",
+    "ridge", "rocks", "sandy", "shade", "shade", "trend", "vivid",
+    "wedge", "winds", "woods", "youth",
 }
 
 PREMIUM_BRANDS_TECH = {
@@ -414,9 +429,11 @@ PREMIUM_TIERS = {
 
 
 def _load_real_words():
-    global REAL_WORDS
+    global REAL_WORDS, COMMON_WORDS
     for w in WORD_LIBRARIES.get("all", []):
         REAL_WORDS.add(w.lower())
+    for w in WORD_LIBRARIES.get("google", []):
+        COMMON_WORDS.add(w.lower())
 
 _load_real_words()
 
@@ -459,7 +476,7 @@ def _calc_username_value(word: str, cat: str) -> int:
             break
 
     if matched_tier is None:
-        if wl in REAL_WORDS:
+        if wl in COMMON_WORDS:
             if length <= 4:
                 base = 380
             elif length <= 6:
@@ -468,8 +485,10 @@ def _calc_username_value(word: str, cat: str) -> int:
                 base = 150
             else:
                 base = 80
-        elif _is_good_username(wl):
+        elif wl in REAL_WORDS and _is_good_username(wl):
             base = 60
+        elif _is_good_username(wl):
+            base = 40
 
     length_mult = {3: 2.5, 4: 2.0, 5: 1.5, 6: 1.2, 7: 1.0, 8: 0.8}
     base *= length_mult.get(length, 0.5)
