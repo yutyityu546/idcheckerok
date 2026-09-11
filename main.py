@@ -614,7 +614,13 @@ def _process_callback(call, user_id):
         if call.data == "profile":
             vip = "✅ Активна" if user_id in VIP_USERS or (call.from_user.username or "").lower() in VIP_USERS else "❌ Нет"
             text = f"👤 Профиль\n\n🆔 ID: {user_id}\n📛 @{call.from_user.username or 'нет'}\n⭐ VIP: {vip}"
-            safe_send_message(call.message.chat.id, text)
+            back_kb = InlineKeyboardMarkup()
+            back_kb.add(InlineKeyboardButton("← Назад", callback_data="back_to_menu"))
+            safe_send_message(call.message.chat.id, text, reply_markup=back_kb)
+            return
+
+        if call.data == "back_to_menu":
+            safe_send_message(call.message.chat.id, "Главное меню:", reply_markup=get_main_keyboard(call))
             return
 
         if call.data == "free_random":
