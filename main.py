@@ -303,6 +303,7 @@ def _build_word_libraries() -> dict:
 
 
 WORD_LIBRARIES = _build_word_libraries()
+_load_real_words()
 
 WORD_CATEGORY_META = {
     "rare": {"title": "💎 Дорогие/редкие", "description": "Редкие буквы, звучание ценности"},
@@ -326,23 +327,51 @@ def fetch_words_by_category(category: str, limit: int = 30) -> list[str]:
     return picked
 
 
+REAL_WORDS = set()
+HIGH_VALUE_WORDS = {
+    "norway", "sweden", "france", "italy", "spain", "germany", "japan", "china",
+    "india", "brazil", "russia", "egypt", "israel", "qatar", "cyprus", "malta",
+    "venus", "mars", "luna", "solar", "lunar", "nexus", "pixel", "cobra",
+    "tiger", "eagle", "raven", "storm", "frost", "blade", "swift", "viper",
+    "royal", "prime", "sigma", "alpha", "omega", "gamma", "delta", "titan",
+    "odin", "zeus", "ares", "troy", "rome", "aria", "aura", "nova", "zen",
+    "neo", "ace", "max", "rex", "solo", "echo", "iris", "onyx", "jade",
+    "ruby", "gold", "ruby", "pearl", "onyx", "topaz", "azure", "ivory",
+}
+
+
+def _load_real_words():
+    global REAL_WORDS
+    for w in WORD_LIBRARIES.get("all", []):
+        REAL_WORDS.add(w.lower())
+
+
 def _calc_username_value(word: str, cat: str) -> int:
-    """Calculates username value 10-500 based on rarity."""
-    rare_letters = set("qxzjkvwy")
-    common_letters = set("etaoinsrhld")
-    score = 50
+    """Calculates username value 10-500 based on memorability and market value."""
+    wl = word.lower()
 
-    for c in word.lower():
-        if c in rare_letters:
-            score += 15
-        elif c not in common_letters:
-            score += 8
+    if wl in HIGH_VALUE_WORDS:
+        return 450
 
-    cat_bonus = {"rare": 100, "archaic": 70, "narrow": 40}
+    score = 30
+
+    if wl in REAL_WORDS:
+        score += 120
+
+    vowels = sum(1 for c in wl if c in "aeiou")
+    consonants = len(wl) - vowels
+    has_good_flow = vowels > 0 and consonants > 0
+    if has_good_flow:
+        score += 40
+
+    cat_bonus = {"rare": 50, "archaic": 30, "narrow": 20}
     score += cat_bonus.get(cat, 0)
 
-    length_bonus = {3: 80, 4: 50, 5: 30, 6: 10}
-    score += length_bonus.get(len(word), 0)
+    length_bonus = {3: 60, 4: 40, 5: 20, 6: 10}
+    score += length_bonus.get(len(wl), 0)
+
+    if len(wl) >= 4 and not has_good_flow:
+        score -= 30
 
     return max(10, min(500, score))
 
