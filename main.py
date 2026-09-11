@@ -333,98 +333,92 @@ COMMON_WORDS = set()
 PREMIUM_NAMES = {
     "hayden", "mason", "liam", "noah", "ethan", "logan", "luca", "milo",
     "ruby", "iris", "aria", "nova", "luna", "maya", "sofia", "zoe",
-    "leo", "max", "ian", "kai", "rex", "ace", "ray", "sky", "taj",
-    "jack", "jade", "joel", "joss", "kirk", "lane", "neil", "omal",
-    "paul", "reed", "sean", "troy", "ward", "zane", "clint", "dean",
+    "jack", "jade", "joel", "kirk", "lane", "neil", "paul", "reed",
+    "sean", "troy", "ward", "zane", "clint", "dean", "blake", "chase",
+    "drew", "cole", "dylan", "ethan", "finn", "gavin", "henry",
+    "isaac", "jason", "kevin", "liam", "mason", "noah", "owen",
+    "quinn", "ryder", "sean", "tyler", "vincent", "wyatt",
 }
 
 PREMIUM_GEOGRAPHY = {
     "norway", "sweden", "france", "italy", "spain", "germany", "japan",
     "china", "india", "brazil", "russia", "egypt", "israel", "qatar",
-    "cyprus", "malta", "korea", "peru", "cuba", "fiji", "iraq", "iran",
-    "oman", "mali", "togo", "bali", "crete", "osaka", "berlin", "paris",
-    "london", "miami", "tokyo", "delhi", "cairo", "kyiv", "baku", "doha",
-    "asia", "europa", "niger", "ghana", "java", "fuji", "texas", "rome",
+    "cyprus", "malta", "korea", "peru", "cuba", "fiji", "iraq",
+    "bali", "crete", "osaka", "berlin", "paris", "london", "miami",
+    "tokyo", "delhi", "cairo", "kyiv", "rome", "asia", "dubai",
+    "hawaii", "canada", "mexico", "poland", "turkey", "greece",
+    "swiss", "venice", "naples", "florence", "vienna", "prague",
+    "moscow", "beijing", "seoul", "bangkok", "hanoi", "lima",
 }
 
-PREMIUM_WORDS_3_4 = {
+PREMIUM_WORDS_4_6 = {
     "mold", "boar", "clog", "dusk", "flux", "fume", "glen", "haze",
     "iron", "jinx", "knot", "lens", "moss", "nape", "opal", "pine",
     "quay", "rift", "sage", "tarn", "urge", "vale", "wade", "yarn",
-    "zinc", "ash", "axe", "bay", "cob", "dew", "elm", "fen", "gem",
-    "hut", "ivy", "jab", "keg", "lid", "mud", "nap", "orb", "peg",
-    "rug", "sip", "tab", "urn", "vat", "wig", "zap", "bolt", "dawn",
-    "echo", "fawn", "glow", "hint", "iris", "jade", "kite", "loft",
-    "muse", "nook", "onyx", "plum", "rain", "silk", "tide", "vine",
-    "wren", "yore", "arch", "bard", "core", "drum", "epic", "fyrd",
-    "grit", "harp", "icon", "jazz", "kern", "lore", "mace", "naev",
-    "opal", "pike", "rune", "saga", "tome", "vane", "wold", "zinc",
-    "acre", "bait", "calm", "damp", "ease", "fame", "gain", "halt",
-    "inn", "jail", "lame", "meek", "neat", "oak", "palm", "raid",
-    "sage", "tame", "urge", "vast", "waif", "yelp", "zone", "cask",
-    "dint", "fret", "grit", "haze", "jab", "keen", "lurk", "mire",
-    "nook", "ogle", "pout", "rife", "sere", "trod", "urn", "wist",
-    "cove", "dale", "eyot", "firth", "gale", "holm", "isle", "kelp",
-    "lode", "mead", "neap", "ox", "pier", "reef", "salt", "tid",
-}
-
-PREMIUM_WORDS_5_6 = {
-    "cider", "crane", "daisy", "eagle", "fable", "grain",
-    "honor", "ivory", "jewel", "karma", "lemon", "maple", "noble",
-    "olive", "pearl", "quail", "robin", "sigma", "thorn", "umbra",
-    "vigor", "whale", "cedar", "cobra", "delta", "ember", "fjord",
-    "haven", "lotus", "mango", "nectar", "plume", "raven", "shard",
-    "tower", "viper", "zenith", "blaze", "cloud", "drift", "felix",
-    "grove", "knoll", "lunar", "marsh", "orbit", "prism", "quest",
-    "rider", "solar", "trail", "storm", "blade", "swift", "nexus",
-    "cower", "tiger", "lucky", "flame", "frost", "ghost", "power",
-    "dream", "force", "noble", "royal", "steel", "witch", "ultra",
-    "basin", "beach", "brook", "creek", "field", "flint", "forge",
-    "gaunt", "heath", "hills", "lofty", "marsh", "mills", "moors",
-    "ridge", "rocks", "sandy", "shade", "shade", "trend", "vivid",
-    "wedge", "winds", "woods", "youth",
+    "zinc", "bolt", "dawn", "echo", "fawn", "glow", "hint", "iris",
+    "jade", "kite", "loft", "muse", "nook", "onyx", "plum", "rain",
+    "silk", "tide", "vine", "arch", "bard", "core", "drum", "epic",
+    "grit", "harp", "icon", "jazz", "lore", "pike", "rune", "saga",
+    "tome", "vane", "cider", "crane", "daisy", "eagle", "fable",
+    "grain", "ivory", "karma", "lemon", "noble", "pearl", "cedar",
+    "cobra", "delta", "ember", "fjord", "haven", "lotus", "raven",
+    "viper", "blaze", "cloud", "drift", "grove", "knoll", "lunar",
+    "orbit", "prism", "quest", "rider", "solar", "trail", "storm",
+    "blade", "swift", "nexus", "tiger", "frost", "dream", "force",
+    "royal", "steel", "ultra", "whale", "forge", "ridge", "shade",
+    "ocean", "river", "flame", "frost", "ghost", "power", "noble",
+    "beach", "brook", "creek", "field", "flint", "heath", "marsh",
+    "rocks", "sandy", "trend", "vivid", "winds", "woods", "youth",
+    "cedar", "maple", "aspen", "birch", "hazel", "laurel", "willow",
+    "crystal", "diamond", "emerald", "jade", "onyx", "ruby", "sapphire",
+    "topaz", "amber", "pearl", "ivory", "bronze", "chrome", "copper",
+    "gold", "iron", "nickel", "platinum", "silver", "steel", "titan",
 }
 
 PREMIUM_BRANDS_TECH = {
     "apple", "google", "tesla", "nike", "sony", "meta", "visa", "zoom",
-    "uber", "nasa", "fbi", "cia", "nato", "aws", "sql", "api", "git",
-    "ssh", "css", "html", "linux", "pixel", "robot", "cyber", "drone",
-    "crypto", "token", "wallet", "defi", "nft", "web3", "mining",
-    "tesla", "ford", "bmw", "audi", "huawei", "xiaomi", "samsung",
+    "uber", "nasa", "aws", "api", "git", "linux", "pixel", "robot",
+    "cyber", "drone", "crypto", "token", "wallet", "defi", "nft",
+    "binance", "solana", "chain", "forge", "nexus", "pulse", "vortex",
+    "quantum", "matrix", "cipher", "helix", "nova", "spark", "flash",
 }
 
 PREMIUM_MYTHOLOGY = {
-    "odin", "zeus", "ares", "isis", "loki", "thor", "rama", "maya",
-    "kali", "troy", "sparta", "olymp", "titan", "ninja", "ronin",
+    "odin", "zeus", "ares", "isis", "loki", "thor", "maya", "troy",
+    "titan", "ninja", "ronin", "samurai", "spartan", "warrior",
+    "phoenix", "dragon", "griffin", "hydra", "kraken", "minotaur",
+    "pegasus", "sphinx", "cerberus", "centaur", "chimera", "golem",
 }
 
 PREMIUM_POP_CULTURE = {
-    "mario", "luigi", "sonic", "pikachu", "naruto", "goku", "link",
-    "zelda", "mario", "batman", "ironman", "spider", "deadpool",
-    "thanos", "joker", "harley", "saitama", "itachi", "luffy",
+    "mario", "sonic", "naruto", "goku", "link", "zelda", "batman",
+    "joker", "saitama", "luffy", "gandalf", "aragorn", "frodo",
+    "neo", "morpheus", "vader", "yoda", "solo", "fury", "thor",
+    "hulk", "iron", "storm", "flash", "wolverine", "deadpool",
+    "spider", "thanos", "loki", "ultron", "vision", "widow",
 }
 
 PREMIUM_CRYPTO = {
-    "bitcoin", "ethereum", "solana", "dogecoin", "shiba", "pepe",
-    "bonk", "wojak", "satoski", "vitalik", "binance", "coinbase",
-    "tether", "ripple", "cardano", "polkadot", "avalanche",
+    "bitcoin", "ethereum", "solana", "dogecoin", "pepe", "bonk",
+    "satoshi", "vitalik", "binance", "coinbase", "tether", "ripple",
+    "cardano", "polkadot", "avalanche", "polygon", "uniswap",
+    "chainlink", "cosmos", "near", "aptos", "sui", "ton",
 }
 
 ALL_PREMIUM = (
-    PREMIUM_NAMES | PREMIUM_GEOGRAPHY | PREMIUM_WORDS_3_4 |
-    PREMIUM_WORDS_5_6 | PREMIUM_BRANDS_TECH | PREMIUM_MYTHOLOGY |
+    PREMIUM_NAMES | PREMIUM_GEOGRAPHY | PREMIUM_WORDS_4_6 |
+    PREMIUM_BRANDS_TECH | PREMIUM_MYTHOLOGY |
     PREMIUM_POP_CULTURE | PREMIUM_CRYPTO
 )
 
 PREMIUM_TIERS = {
-    "names": (PREMIUM_NAMES, 250),
-    "geography": (PREMIUM_GEOGRAPHY, 240),
-    "words34": (PREMIUM_WORDS_3_4, 230),
-    "words56": (PREMIUM_WORDS_5_6, 150),
-    "brands": (PREMIUM_BRANDS_TECH, 220),
-    "mythology": (PREMIUM_MYTHOLOGY, 210),
-    "popculture": (PREMIUM_POP_CULTURE, 200),
-    "crypto": (PREMIUM_CRYPTO, 190),
+    "names": (PREMIUM_NAMES, 8000),
+    "geography": (PREMIUM_GEOGRAPHY, 7000),
+    "words": (PREMIUM_WORDS_4_6, 5000),
+    "brands": (PREMIUM_BRANDS_TECH, 6000),
+    "mythology": (PREMIUM_MYTHOLOGY, 5500),
+    "popculture": (PREMIUM_POP_CULTURE, 5000),
+    "crypto": (PREMIUM_CRYPTO, 4500),
 }
 
 
@@ -505,9 +499,9 @@ def _calc_username_value(word: str, cat: str, scrape: bool = False) -> int:
             return stars
 
     base = 200
-    for tier_name, (tier_set, _) in PREMIUM_TIERS.items():
+    for tier_name, (tier_set, tier_val) in PREMIUM_TIERS.items():
         if wl in tier_set:
-            base = 8000
+            base = tier_val
             break
 
     if base == 200:
@@ -518,8 +512,8 @@ def _calc_username_value(word: str, cat: str, scrape: bool = False) -> int:
         elif _is_good_username(wl):
             base = 400
 
-    length_mult = {3: 3.0, 4: 2.0, 5: 1.3, 6: 1.0, 7: 0.7, 8: 0.5}
-    base *= length_mult.get(len(wl), 0.3)
+    length_mult = {4: 2.0, 5: 1.5, 6: 1.2, 7: 1.0, 8: 0.8, 9: 0.6}
+    base *= length_mult.get(len(wl), 0.4)
 
     return max(5, int(base))
 
