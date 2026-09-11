@@ -504,19 +504,19 @@ def _calc_username_value(word: str, cat: str, scrape: bool = False) -> int:
         if status == "ok" and stars > 0:
             return stars
 
-    base = 5
+    base = 200
     for tier_name, (tier_set, _) in PREMIUM_TIERS.items():
         if wl in tier_set:
-            base = 150
+            base = 8000
             break
 
-    if base == 5:
+    if base == 200:
         if wl in COMMON_WORDS:
-            base = 80 if len(wl) <= 6 else 30
+            base = 3000 if len(wl) <= 4 else 1500 if len(wl) <= 6 else 500
         elif wl in REAL_WORDS and _is_good_username(wl):
-            base = 15
+            base = 800
         elif _is_good_username(wl):
-            base = 8
+            base = 400
 
     length_mult = {3: 3.0, 4: 2.0, 5: 1.3, 6: 1.0, 7: 0.7, 8: 0.5}
     base *= length_mult.get(len(wl), 0.3)
@@ -555,6 +555,7 @@ def fetch_words_mixed(limit: int = 30) -> list[tuple[str, str, str, int]]:
                     val = _calc_username_value(w, cat_key)
                     result.append((w, cat_key, emoji, val))
     random.shuffle(result)
+    result.sort(key=lambda x: x[3], reverse=True)
     picked = result[:limit]
     _mark_shown([w for w, _, _, _ in picked])
     return picked
