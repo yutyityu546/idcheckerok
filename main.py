@@ -326,7 +326,28 @@ def fetch_words_by_category(category: str, limit: int = 30) -> list[str]:
     return picked
 
 
-def fetch_words_mixed(limit: int = 30) -> list[tuple[str, str, str]]:
+def _calc_username_value(word: str, cat: str) -> int:
+    """Calculates username value 10-500 based on rarity."""
+    rare_letters = set("qxzjkvwy")
+    common_letters = set("etaoinsrhld")
+    score = 50
+
+    for c in word.lower():
+        if c in rare_letters:
+            score += 15
+        elif c not in common_letters:
+            score += 8
+
+    cat_bonus = {"rare": 100, "archaic": 70, "narrow": 40}
+    score += cat_bonus.get(cat, 0)
+
+    length_bonus = {3: 80, 4: 50, 5: 30, 6: 10}
+    score += length_bonus.get(len(word), 0)
+
+    return max(10, min(500, score))
+
+
+def fetch_words_mixed(limit: int = 30) -> list[tuple[str, str, str, int]]:
     result = []
     shown_set = _load_shown_words_set()
     for cat_key in ["rare", "archaic", "narrow"]:
@@ -334,7 +355,8 @@ def fetch_words_mixed(limit: int = 30) -> list[tuple[str, str, str]]:
         emoji = meta.get("title", "📖").split()[0]
         for w in WORD_LIBRARIES.get(cat_key, []):
             if w.lower() not in BLOCKED_KEYWORDS and w.lower() not in shown_set:
-                result.append((w, cat_key, emoji))
+                val = _calc_username_value(w, cat_key)
+                result.append((w, cat_key, emoji, val))
     if len(result) < limit:
         _save_shown_words([])
         shown_set = set()
@@ -344,10 +366,11 @@ def fetch_words_mixed(limit: int = 30) -> list[tuple[str, str, str]]:
             emoji = meta.get("title", "📖").split()[0]
             for w in WORD_LIBRARIES.get(cat_key, []):
                 if w.lower() not in BLOCKED_KEYWORDS:
-                    result.append((w, cat_key, emoji))
+                    val = _calc_username_value(w, cat_key)
+                    result.append((w, cat_key, emoji, val))
     random.shuffle(result)
     picked = result[:limit]
-    _mark_shown([w for w, _, _ in picked])
+    _mark_shown([w for w, _, _, _ in picked])
     return picked
 
 
@@ -647,8 +670,8 @@ def _process_callback(call, user_id):
             if category == "mixed":
                 items = fetch_words_mixed(limit=30)
                 report = "🌐 VIP: Все категории\n\n"
-                report += "\n".join(f"• @{w} {emoji}" for w, _, emoji in items)
-                raw_bytes = "\n".join(w for w, _, _ in items).encode("utf-8")
+                report += "\n".join(f"• @{w} {emoji} 💰{val}" for w, _, emoji, val in items)
+                raw_bytes = "\n".join(w for w, _, _, _ in items).encode("utf-8")
             else:
                 cat_meta = WORD_CATEGORY_META.get(category, {})
                 title = cat_meta.get("title", "📖")
