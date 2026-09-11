@@ -451,83 +451,82 @@ def _is_good_username(word: str) -> bool:
     return True
 
 
-def _calc_username_value(word: str, cat: str) -> int:
-    """Estimates real USD market price based on Fragment/Getgems sales.
-    Returns price in Telegram Stars (1 star ≈ $0.005).
-
-    Fragment reference:
-    - 3-letter common word: $500-$50,000
-    - 4-letter common word: $500-$15,000
-    - 5-letter real word: $100-$1,000
-    - 6-letter name: $500-$15,000
-    - 7+ letter real word: $20-$500
-    - Pronounceable nonsense: $1-$20
+def _scrape_fragment_price(username: str) -> tuple[int, str]:
+    """Scrapes real price from Fragment. Returns (stars, status).
+    1 TON ≈ $1.35, 1 star ≈ $0.005, so 1 TON ≈ 270 stars.
     """
-    wl = word.lower()
-    length = len(wl)
+    import re as _re
+    username = username.lower().strip()
+    url = f"https://fragment.com/username/{username}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    }
 
-    usd = 5.0
+    try:
+        r = requests.get(url, timeout=8, headers=headers, allow_redirects=False)
+        if r.status_code == 302:
+            return 0, "not_found"
 
-    for tier_name, (tier_set, tier_base) in PREMIUM_TIERS.items():
+        html = r.text
+        cells = _re.findall(r'table-cell-value[^>]*>(.*?)</div>', html, re.DOTALL)
+        clean = [_re.sub(r'<[^>]+>', '', c).strip() for c in cells]
+        clean = [c for c in clean if c and c.replace(',', '').replace('.', '').isdigit()]
+
+        if not clean:
+            return 0, "unknown"
+
+        price_str = clean[0].replace(',', '')
+        try:
+            ton_price = int(price_str)
+        except ValueError:
+            return 0, "unknown"
+
+        if ton_price <= 0:
+            return 0, "unknown"
+
+        stars = int(ton_price * 270)
+        return stars, "ok"
+
+    except Exception as e:
+        print(f"[!] Fragment scrape error @{username}: {e}")
+        return 0, "error"
+
+
+def _calc_username_value(word: str, cat: str) -> int:
+    """Real-time Fragment price estimation."""
+    wl = word.lower().strip()
+
+    stars, status = _scrape_fragment_price(wl)
+    if status == "ok" and stars > 0:
+        return stars
+
+    base = 5
+    for tier_name, (tier_set, _) in PREMIUM_TIERS.items():
         if wl in tier_set:
-            if length == 3:
-                usd = 2500.0
-            elif length == 4:
-                usd = 1500.0
-            elif length == 5:
-                usd = 500.0
-            elif length == 6:
-                usd = 300.0
-            else:
-                usd = 150.0
+            base = 150
             break
 
-    if usd == 5.0:
+    if base == 5:
         if wl in COMMON_WORDS:
-            if length <= 4:
-                usd = 800.0
-            elif length <= 6:
-                usd = 200.0
-            elif length <= 8:
-                usd = 50.0
-            else:
-                usd = 15.0
+            base = 80 if len(wl) <= 6 else 30
         elif wl in REAL_WORDS and _is_good_username(wl):
-            usd = 30.0
+            base = 15
         elif _is_good_username(wl):
-            usd = 8.0
+            base = 8
 
-    if length == 3:
-        usd *= 3.0
-    elif length == 4:
-        usd *= 2.0
-    elif length == 5:
-        usd *= 1.3
-    elif length == 6:
-        usd *= 1.0
-    elif length == 7:
-        usd *= 0.7
-    elif length >= 8:
-        usd *= 0.4
+    length_mult = {3: 3.0, 4: 2.0, 5: 1.3, 6: 1.0, 7: 0.7, 8: 0.5}
+    base *= length_mult.get(len(wl), 0.3)
 
-    if _is_good_username(wl):
-        usd *= 1.2
-
-    cat_mult = {"rare": 1.15, "archaic": 1.1, "narrow": 1.05}
-    usd *= cat_mult.get(cat, 1.0)
-
-    usd = max(1.0, min(50000.0, usd))
-    stars = int(usd / 0.005)
-    return stars
+    return max(5, int(base))
 
 
 def _format_stars(stars: int) -> str:
-    if stars >= 10000:
-        return f"{stars:,} ⭐ (~${int(stars * 0.005):,})"
-    elif stars >= 1000:
-        return f"{stars:,} ⭐ (~${int(stars * 0.005):,})"
-    else:
-        return f"{stars} ⭐ (~${int(stars * 0.005)})"
+    if stars <= 0:
+        return "❓"
+    usd = int(stars * 0.005)
+    if usd >= 1000:
+        return f"≈{usd:,}$"
+    return f"≈{usd}$"
 
 
 def fetch_words_mixed(limit: int = 30) -> list[tuple[str, str, str, int]]:
