@@ -1,12 +1,13 @@
-import io
 import os
 import json
 import time
 import random
 import string
+import re
 import ssl
 import socket
 import threading
+import hashlib
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
@@ -327,16 +328,60 @@ def fetch_words_by_category(category: str, limit: int = 30) -> list[str]:
 
 
 REAL_WORDS = set()
-HIGH_VALUE_WORDS = {
+
+PREMIUM_GEOGRAPHY = {
     "norway", "sweden", "france", "italy", "spain", "germany", "japan", "china",
     "india", "brazil", "russia", "egypt", "israel", "qatar", "cyprus", "malta",
-    "venus", "mars", "luna", "solar", "lunar", "nexus", "pixel", "cobra",
-    "tiger", "eagle", "raven", "storm", "frost", "blade", "swift", "viper",
-    "royal", "prime", "sigma", "alpha", "omega", "gamma", "delta", "titan",
-    "odin", "zeus", "ares", "troy", "rome", "aria", "aura", "nova", "zen",
-    "neo", "ace", "max", "rex", "solo", "echo", "iris", "onyx", "jade",
-    "ruby", "gold", "ruby", "pearl", "onyx", "topaz", "azure", "ivory",
+    "venus", "mars", "korea", "niger", "ghana", "peru", "cuba", "fiji", "iraq",
+    "iran", "oman", "mali", "togo", "benin", "java", "fuji", "bali", "crete",
+    "texas", "osaka", "berlin", "paris", "london", "miami", "tokyo", "delhi",
+    "cairo", "rome", "kyiv", "baku", "doha", "rips", "asia", "europa", "afro",
 }
+
+PREMIUM_BRANDS_TECH = {
+    "apple", "google", "tesla", "nike", "sony", "meta", "visa", "zoom",
+    "uber", "lyft", "visa", "axon", "nasa", "fbi", "cia", "nato", "aws",
+    "sql", "api", "git", "ssh", "css", "html", "linux", "macos", "pixel",
+    "robot", "cyber", "drone", "hacker", "crypto", "token", "wallet",
+    "defi", "nft", "web3", "blockchain", "mining", "mining",
+}
+
+PREMIUM_MYTHOLOGY = {
+    "odin", "zeus", "ares", "isis", "loki", "thor", "rama", "shiva",
+    "maya", "kali", "yama", "raju", "troy", "sparta", "olymp", "titan",
+    "ninja", "samurai", "ronin", "shogun", "sensei", "yakuza",
+}
+
+PREMIUM_GEMSTONE = {
+    "ruby", "jade", "onyx", "gold", "opal", "silk", "pearl", "amber",
+    "emerald", "diamond", "crystal", "ivory", "marble", "bronze", "silver",
+    "platinum", "copper", "cobalt", "titanium", "chrome",
+}
+
+PREMIUM_ANIMALS = {
+    "tiger", "eagle", "raven", "cobra", "viper", "shark", "wolf", "bear",
+    "lynx", "hawk", "puma", "fox", "owl", "elk", "ape", "ram",
+    "lion", "bull", "hawk", "crane", "drake", "wyrm",
+}
+
+PREMIUM_POWER = {
+    "royal", "prime", "sigma", "alpha", "omega", "gamma", "delta",
+    "legend", "hero", "viper", "nexus", "atlas", "storm", "blade",
+    "frost", "flash", "spark", "ghost", "shadow", "phantom", "dark",
+    "light", "flame", "fury", " rage", "wrath", "soul", "doom",
+}
+
+PREMIUM_SHORT = {
+    "neo", "ace", "max", "rex", "zen", "ion", "alt", "app", "bio",
+    "bot", "cmd", "dev", "ego", "fox", "gem", "hub", "ice", "jag",
+    "key", "lab", "mod", "net", "owl", "pro", "rat", "sky", "sun",
+    "tv", "web", "zap", "bit", "box", "zap", "zip", "usa", "uk",
+}
+
+ALL_PREMIUM = (
+    PREMIUM_GEOGRAPHY | PREMIUM_BRANDS_TECH | PREMIUM_MYTHOLOGY |
+    PREMIUM_GEMSTONE | PREMIUM_ANIMALS | PREMIUM_POWER | PREMIUM_SHORT
+)
 
 
 def _load_real_words():
@@ -347,34 +392,70 @@ def _load_real_words():
 _load_real_words()
 
 
-def _calc_username_value(word: str, cat: str) -> int:
-    """Calculates username value 10-500 based on memorability and market value."""
+def _is_good_username(word: str) -> bool:
+    """Checks if word looks like a pronounceable username."""
     wl = word.lower()
-
-    if wl in HIGH_VALUE_WORDS:
-        return 450
-
-    score = 30
-
-    if wl in REAL_WORDS:
-        score += 120
-
     vowels = sum(1 for c in wl if c in "aeiou")
     consonants = len(wl) - vowels
-    has_good_flow = vowels > 0 and consonants > 0
-    if has_good_flow:
-        score += 40
+    if vowels == 0 or consonants == 0:
+        return False
+    if len(wl) >= 4:
+        vowel_ratio = vowels / len(wl)
+        if vowel_ratio < 0.2 or vowel_ratio > 0.8:
+            return False
+    return True
 
-    cat_bonus = {"rare": 50, "archaic": 30, "narrow": 20}
-    score += cat_bonus.get(cat, 0)
 
-    length_bonus = {3: 60, 4: 40, 5: 20, 6: 10}
-    score += length_bonus.get(len(wl), 0)
+def _calc_username_value(word: str, cat: str) -> int:
+    """Market-aware username valuation based on real TON marketplace data.
 
-    if len(wl) >= 4 and not has_good_flow:
-        score -= 30
+    Price tiers based on Fragment/Getgems floor prices:
+    - 3-letter premium: 500-50000 TON ($1000-$100000+)
+    - Real word 3-4 letter: 200-5000 TON
+    - Country/brand 3-5 letter: 100-3000 TON
+    - Real English word: 20-500 TON
+    - Good pronounceable: 5-100 TON
+    - Random garbage: 1-10 TON
+    """
+    wl = word.lower()
+    length = len(wl)
 
-    return max(10, min(500, score))
+    if wl in PREMIUM_GEOGRAPHY:
+        base = 480
+    elif wl in PREMIUM_BRANDS_TECH:
+        base = 460
+    elif wl in PREMIUM_MYTHOLOGY:
+        base = 450
+    elif wl in PREMIUM_GEMSTONE:
+        base = 440
+    elif wl in PREMIUM_ANIMALS:
+        base = 430
+    elif wl in PREMIUM_POWER:
+        base = 420
+    elif wl in PREMIUM_SHORT:
+        base = 400
+    elif wl in REAL_WORDS and length <= 4:
+        base = 350
+    elif wl in REAL_WORDS and length == 5:
+        base = 280
+    elif wl in REAL_WORDS and length == 6:
+        base = 200
+    elif wl in REAL_WORDS:
+        base = 150
+    else:
+        base = 50
+
+    length_mult = {3: 2.0, 4: 1.5, 5: 1.2, 6: 1.0, 7: 0.8}
+    base *= length_mult.get(length, 0.6)
+
+    if _is_good_username(wl):
+        base *= 1.3
+
+    cat_mult = {"rare": 1.4, "archaic": 1.2, "narrow": 1.1}
+    base *= cat_mult.get(cat, 1.0)
+
+    base = max(10, min(500, int(base)))
+    return base
 
 
 def fetch_words_mixed(limit: int = 30) -> list[tuple[str, str, str, int]]:
