@@ -464,9 +464,29 @@ def fetch_words_mixed(limit: int = 30) -> list[tuple[str, str, str, int]]:
                     result.append((w, cat_key, emoji, val))
     random.shuffle(result)
     result.sort(key=lambda x: x[3], reverse=True)
-    picked = result[:limit]
+    candidates = result[:limit * 4]
+    free_words = _bulk_check_available([w for w, _, _, _ in candidates])
+    picked = [(w, cat, em, v) for w, cat, em, v in candidates if w.lower() in free_words][:limit]
+    if len(picked) < limit:
+        picked = candidates[:limit]
     _mark_shown([w for w, _, _, _ in picked])
     return picked
+
+
+def _bulk_check_available(words: list[str]) -> set[str]:
+    import concurrent.futures
+    free = set()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+        future_map = {pool.submit(_fast_check, w): w for w in words}
+        for future in concurrent.futures.as_completed(future_map):
+            w = future_map[future]
+            try:
+                is_free, _ = future.result(timeout=15)
+                if is_free:
+                    free.add(w.lower())
+            except Exception:
+                pass
+    return free
 
 
 def safe_send_message(chat_id, text, **kwargs):
@@ -688,6 +708,8 @@ def get_main_keyboard(event):
 
 @bot.message_handler(commands=["start"])
 def start_command(message):
+    if _is_duplicate_message(message):
+        return
     user = getattr(message, "from_user", None)
     if user:
         uid = getattr(user, "id", None)
@@ -709,6 +731,22 @@ def start_command(message):
 
 PROCESSED_CALLBACKS = {}
 CALLBACK_TTL = 10
+PROCESSED_MSG_IDS = set()
+MSG_TTL = 30
+
+def _is_duplicate_message(message):
+    msg_id = getattr(message, 'id', None) or getattr(message, 'message_id', None)
+    if not msg_id:
+        return False
+    now = time.time()
+    if msg_id in PROCESSED_MSG_IDS:
+        return True
+    PROCESSED_MSG_IDS.add(msg_id)
+    for mid in list(PROCESSED_MSG_IDS):
+        if len(PROCESSED_MSG_IDS) > 5000:
+            PROCESSED_MSG_IDS.clear()
+            break
+    return False
 
 @bot.callback_query_handler(func=lambda call: not call.data.startswith("admin_"))
 def handle_callback(call):
@@ -827,6 +865,8 @@ def process_pre_checkout(query):
 
 @bot.message_handler(commands=["buy"])
 def buy_command(message):
+    if _is_duplicate_message(message):
+        return
     try:
         bot.send_invoice(
             chat_id=message.chat.id,
@@ -855,6 +895,8 @@ def _admin_keyboard():
 
 @bot.message_handler(commands=["apanel"])
 def admin_panel(message):
+    if _is_duplicate_message(message):
+        return
     if not _is_admin(message):
         safe_send_message(message.chat.id, "Нет доступа.")
         return
@@ -921,6 +963,8 @@ def handle_admin_callback(call):
 
 @bot.message_handler(func=lambda m: bool(m.body or m.text) and not (m.body or m.text).startswith("/"))
 def check_single_handle(message):
+    if _is_duplicate_message(message):
+        return
     user = getattr(message, "from_user", None)
     if user:
         uid = getattr(user, "id", None)
