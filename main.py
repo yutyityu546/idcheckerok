@@ -415,30 +415,38 @@ def _calc_username_value(word: str, cat: str, scrape: bool = False) -> int:
         if status == "ok" and stars > 0:
             return stars
 
+    base = 50
+
     if wl in PREMIUM_WORDS:
-        base = 3000
+        if len(wl) == 4:
+            base = 50000
+        else:
+            base = 10000
     elif wl in COMMON_WORDS:
-        base = 1500
+        if len(wl) == 4:
+            base = 20000
+        else:
+            base = 5000
     elif wl in REAL_WORDS:
-        base = 600
+        if len(wl) == 4:
+            base = 5000
+        else:
+            base = 1500
     elif _is_good_username(wl):
-        base = 300
-    else:
-        base = 100
+        if len(wl) == 4:
+            base = 1000
+        else:
+            base = 300
 
-    length_mult = {4: 2.0, 5: 1.5, 6: 1.2, 7: 1.0, 8: 0.8, 9: 0.6}
-    base *= length_mult.get(len(wl), 0.4)
-
-    return max(5, int(base))
+    return max(1, int(base))
 
 
 def _format_stars(stars: int) -> str:
     if stars <= 0:
         return "❓"
-    usd = int(stars * 0.005)
-    if usd >= 1000:
-        return f"≈{usd:,}$"
-    return f"≈{usd}$"
+    if stars >= 1000:
+        return f"💎 ~${stars:,}"
+    return f"💰 ~${stars}"
 
 
 def fetch_words_mixed(limit: int = 30) -> list[tuple[str, str, str, int]]:
