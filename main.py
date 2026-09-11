@@ -521,7 +521,7 @@ def _fast_check(username: str) -> tuple[bool, str]:
     if web_ok is False:
         return True, "Свободен"
 
-    return True, "Свободен"
+    return False, "Не удалось проверить"
 
 
 def _bulk_check(candidates: list[str], needed: int) -> list[str]:
