@@ -558,10 +558,12 @@ def get_main_keyboard(event):
         keyboard.add(InlineKeyboardButton("⚡ VIP: Найти 10 свободных 4-знаков", callback_data="vip_random_10"))
         keyboard.add(InlineKeyboardButton("💎 VIP: Дорогие/редкие ники", callback_data="vip_cat_rare"))
         keyboard.add(InlineKeyboardButton("📜 VIP: Устаревшие/архаичные ники", callback_data="vip_cat_archaic"))
-        keyboard.add(InlineKeyboardButton("🔬 VIP: Узкоспециализированные ники", callback_data="vip_cat_narrow"))
+        keyboard.add(InlineKeyboardButton("🔬 VIP: Узкоспецилизированные ники", callback_data="vip_cat_narrow"))
         keyboard.add(InlineKeyboardButton("🌐 VIP: Все категории (с метками)", callback_data="vip_cat_mixed"))
     else:
         keyboard.add(InlineKeyboardButton("⭐ Купить VIP (100 Звёзд)", callback_data="buy"))
+
+    keyboard.add(InlineKeyboardButton("👤 Профиль", callback_data="profile"))
 
     return keyboard
 
@@ -609,6 +611,12 @@ def handle_callback(call):
 
 def _process_callback(call, user_id):
     try:
+        if call.data == "profile":
+            vip = "✅ Активна" if user_id in VIP_USERS or (call.from_user.username or "").lower() in VIP_USERS else "❌ Нет"
+            text = f"👤 Профиль\n\n🆔 ID: {user_id}\n📛 @{call.from_user.username or 'нет'}\n⭐ VIP: {vip}"
+            safe_send_message(call.message.chat.id, text)
+            return
+
         if call.data == "free_random":
             safe_send_message(call.message.chat.id, "🎲 Генерирую 10 кандидатов...")
 
