@@ -489,6 +489,7 @@ def _web_check(username: str) -> tuple[bool | None, str]:
                 target = redirect_match.group(1)
                 if target.lower() != username.lower():
                     return True, f"Занят (алиас @{target})"
+            return False, "Свободен"
 
         if res.status_code == 404:
             return False, "Свободен"
