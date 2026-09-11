@@ -417,14 +417,14 @@ ALL_PREMIUM = (
 )
 
 PREMIUM_TIERS = {
-    "names": (PREMIUM_NAMES, 480),
-    "geography": (PREMIUM_GEOGRAPHY, 470),
-    "words34": (PREMIUM_WORDS_3_4, 460),
-    "words56": (PREMIUM_WORDS_5_6, 350),
-    "brands": (PREMIUM_BRANDS_TECH, 440),
-    "mythology": (PREMIUM_MYTHOLOGY, 430),
-    "popculture": (PREMIUM_POP_CULTURE, 420),
-    "crypto": (PREMIUM_CRYPTO, 400),
+    "names": (PREMIUM_NAMES, 250),
+    "geography": (PREMIUM_GEOGRAPHY, 240),
+    "words34": (PREMIUM_WORDS_3_4, 230),
+    "words56": (PREMIUM_WORDS_5_6, 150),
+    "brands": (PREMIUM_BRANDS_TECH, 220),
+    "mythology": (PREMIUM_MYTHOLOGY, 210),
+    "popculture": (PREMIUM_POP_CULTURE, 200),
+    "crypto": (PREMIUM_CRYPTO, 190),
 }
 
 
@@ -486,17 +486,17 @@ def _calc_username_value(word: str, cat: str) -> int:
             else:
                 base = 80
         elif wl in REAL_WORDS and _is_good_username(wl):
-            base = 60
+            base = 35
         elif _is_good_username(wl):
-            base = 40
+            base = 20
 
-    length_mult = {3: 2.5, 4: 2.0, 5: 1.5, 6: 1.2, 7: 1.0, 8: 0.8}
-    base *= length_mult.get(length, 0.5)
+    length_mult = {3: 1.8, 4: 1.5, 5: 1.2, 6: 1.0, 7: 0.8, 8: 0.6}
+    base *= length_mult.get(length, 0.4)
 
     if _is_good_username(wl):
-        base *= 1.3
+        base *= 1.1
 
-    cat_mult = {"rare": 1.4, "archaic": 1.2, "narrow": 1.1}
+    cat_mult = {"rare": 1.15, "archaic": 1.1, "narrow": 1.05}
     base *= cat_mult.get(cat, 1.0)
 
     base = max(10, min(500, int(base)))
