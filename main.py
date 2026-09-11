@@ -502,6 +502,29 @@ def _bulk_check_available(words: list[str]) -> set[str]:
     return free
 
 
+def _fetch_vip_words(limit: int = 50) -> list[tuple[str, str, str, int]]:
+    all_words = []
+    for w in PREMIUM_WORDS:
+        if w.lower() not in BLOCKED_KEYWORDS:
+            val = _calc_username_value(w, "premium")
+            all_words.append((w, "premium", "💎", val))
+    for w in COMMON_WORDS_DICT:
+        if w.lower() not in BLOCKED_KEYWORDS:
+            val = _calc_username_value(w, "common")
+            all_words.append((w, "common", "📖", val))
+    for w in REAL_WORDS:
+        if w.lower() not in BLOCKED_KEYWORDS and w not in PREMIUM_WORDS and w not in COMMON_WORDS_DICT:
+            val = _calc_username_value(w, "real")
+            all_words.append((w, "real", "⭐", val))
+    all_words.sort(key=lambda x: -x[3])
+    candidates = all_words[:limit * 3]
+    free_words = _bulk_check_available([w for w, _, _, _ in candidates])
+    picked = [(w, cat, em, v) for w, cat, em, v in candidates if w.lower() in free_words][:limit]
+    if len(picked) < limit:
+        picked = candidates[:limit]
+    return picked
+
+
 def safe_send_message(chat_id, text, **kwargs):
     """Отправка сообщений с повторными попытками при SSL-сбоях."""
     for attempt in range(3):
@@ -825,7 +848,7 @@ def _process_callback(call, user_id):
             category = call.data.replace("vip_cat_", "")
             
             if category == "mixed":
-                items = fetch_words_mixed(limit=30)
+                items = _fetch_vip_words(limit=50)
                 report = "🌐 VIP: Все категории\n\n"
                 report += "\n".join(f"• @{w} {emoji} {_format_stars(val)}" for w, _, emoji, val in items)
                 raw_bytes = "\n".join(w for w, _, _, _ in items).encode("utf-8")
