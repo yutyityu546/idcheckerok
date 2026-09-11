@@ -647,7 +647,7 @@ def _process_callback(call, user_id):
             if category == "mixed":
                 items = fetch_words_mixed(limit=30)
                 report = "🌐 VIP: Все категории\n\n"
-                report += "\n".join(f"• @{w}" for w, _, _ in items)
+                report += "\n".join(f"• @{w} {emoji}" for w, _, emoji in items)
                 raw_bytes = "\n".join(w for w, _, _ in items).encode("utf-8")
             else:
                 cat_meta = WORD_CATEGORY_META.get(category, {})
