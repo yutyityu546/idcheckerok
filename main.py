@@ -492,13 +492,17 @@ def _scrape_fragment_price(username: str) -> tuple[int, str]:
         return 0, "error"
 
 
-def _calc_username_value(word: str, cat: str) -> int:
-    """Real-time Fragment price estimation."""
+def _calc_username_value(word: str, cat: str, scrape: bool = False) -> int:
+    """Username value estimation.
+    If scrape=True — queries Fragment for real price (slow).
+    For bulk operations — uses fast local estimate.
+    """
     wl = word.lower().strip()
 
-    stars, status = _scrape_fragment_price(wl)
-    if status == "ok" and stars > 0:
-        return stars
+    if scrape:
+        stars, status = _scrape_fragment_price(wl)
+        if status == "ok" and stars > 0:
+            return stars
 
     base = 5
     for tier_name, (tier_set, _) in PREMIUM_TIERS.items():
@@ -1059,9 +1063,11 @@ def check_single_handle(message):
 
     is_free, reason = _fast_check(username)
     if not is_free:
+        stars = _calc_username_value(username, "rare", scrape=True)
+        price = _format_stars(stars)
         safe_send_message(
             message.chat.id,
-            f"🔴 Ник @{username} занят ({reason}).",
+            f"🔴 Ник @{username} занят ({reason}).\n💰 Рыночная цена: {price}",
         )
         return
 
