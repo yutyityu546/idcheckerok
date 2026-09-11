@@ -411,8 +411,10 @@ def _load_unixgram_cookies() -> dict:
             cookies = json.loads(env_cookies)
             print(f"[+] Куки загружены из env ({len(cookies)} шт)")
             return cookies
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[!] Ошибка парсинга кук из env: {e}")
+    else:
+        print("[!] UNIXGRAM_COOKIES не задана")
 
     cookies = {}
 
